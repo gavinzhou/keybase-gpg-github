@@ -44,13 +44,14 @@ $ keybase pgp gen --multi
 
 ```sh
 $ gpg --list-secret-keys --keyid-format LONG
-# /Users/pstadler/.gnupg/secring.gpg
-# ----------------------------------
-# sec   4096R/E870EE00 2016-04-06 [expires: 2032-04-02]
-# uid                  Patrick Stadler <patrick.stadler@gmail.com>
-# ssb   4096R/F9E3E72E 2016-04-06
+# /Users/zhou.gavin/.gnupg/pubring.kbx
+# ------------------------------------
+# sec   rsa4096/72B067F6C2B45BC4 2018-11-19 [SC] [有効期限: 2034-11-15]
+#       FDAADBA6170F0A4F9C15046E72B067F6C2B45BC4
+# uid                 [  不明  ] gavin zhou <gavin.zhou@gmail.com>
+# ssb   rsa4096/2CAEAFCE17BE985B 2018-11-19 [E] [有効期限: 2034-11-15]
 
-$ git config --global user.signingkey E870EE00
+$ git config --global user.signingkey C2B45BC4
 $ git config --global commit.gpgsign true
 ```
 
@@ -76,8 +77,8 @@ $ keybase pgp export
 # user: keybase.io/ps <ps@keybase.io>
 # 4096-bit RSA key, ID 31DBBB1F6949DA68, created 2014-03-26
 
-$ keybase pgp export -q CB86A866E870EE00 | gpg --import
-$ keybase pgp export -q CB86A866E870EE00 --secret | gpg --allow-secret-key-import --import
+$ keybase pgp export -q 72B067F6C2B45BC4 | gpg --import
+$ keybase pgp export -q 72B067F6C2B45BC4 --secret | gpg --allow-secret-key-import --import
 ```
 
 ## Troubleshooting: `gpg failed to sign the data`
@@ -99,7 +100,9 @@ If the above succeeds without error, then there is likely a configuration proble
 ```sh
 $ $EDITOR ~/.gnupg/gpg.conf
 # Add line:
-default-key E870EE00
+default-key FDAADBA6170F0A4F9C15046E72B067F6C2B45BC4
+no-tty
+use-agent
 ```
 
 ## Optional: Fix for Git UIs
@@ -117,17 +120,6 @@ $ $EDITOR ~/.gnupg/gpg.conf
 no-tty
 ```
 
-## Optional: Setting up TTY  
-Depending on your personal setup, you might need to define the tty for gpg
-whenever your passphrase is prompted. Otherwise, you might encounter an `Inappropriate
-ioctl for device` error.
-```sh
-$ $EDITOR ~/.profile # or other file that is sourced every time
-# Paste these lines
-GPG_TTY=$(tty)
-export GPG_TTY
-```
-
 ## Optional: In case you're prompted to enter the password every time
 
 > Some people found that this works out of the box w/o following these steps.
@@ -137,7 +129,7 @@ export GPG_TTY
 Install the needed software:
 
 ```sh
-$ brew install gpg-agent pinentry-mac
+$ brew install pinentry-mac
 ```
 
 Enable agent use:
@@ -176,37 +168,3 @@ Now `git commit -S`, it will ask your password and you can save it to macOS
 keychain.
 
 ![pinentry](img/pinentry.png)
-
-### Method 2 - GPG Suite
-
-Some people find that pinentry installed with brew does not allow the password to be saved to macOS's keychain.
-
-If you do not see "Save in Keychain" after following Method 1, first uninstall the versions of pinentry-mac and gpg-agent installed with brew:
-
-```sh
-$ brew uninstall gpg-agent pinentry-mac
-```
-
-Now install the GPG Suite versions, available from [gpgtools.org](https://gpgtools.org/#gpgsuite), or from brew by running:
-
-```sh
-$ brew cask install gpg-suite
-```
-
-Once installed, open Spotlight and search for "GPGPreferences", or open system preferences and select "GPGPreferences"
-
-Select the Default Key if it is not already selected, and ensure "Store in OS X Keychain" is checked:
-
-![gpg preferences](img/gpg-preferences.png)
-
-The config files edited are the same as in Method 1, however `gpg-agent.conf` is different:
-
-Set up the agent:
-
-```sh
-$ $EDITOR ~/.gnupg/gpg-agent.conf
-# GPG Suite should pre-populate with something similar to the following:
-use-standard-socket
-default-cache-ttl 600
-max-cache-ttl 7200
-```
